@@ -17,18 +17,20 @@ describe("POST /api/chats", () => {
       email: "stefan@example.com",
     });
 
-    const agent = request.agent(app);
-
-    await agent.post("/api/auth/register").send({
+    const registerRes = await request(app).post("/api/auth/register").send({
       username: "marko",
       email: "marko@example.com",
       password: "password123",
       name: "Marko",
     });
+    const token = registerRes.body.token;
 
-    const res = await agent.post("/api/chats").send({
-      profileIds: [otherUser.id],
-    });
+    const res = await request(app)
+      .post("/api/chats")
+      .set("Authorization", `Bearer ${token}`)
+      .send({
+        profileIds: [otherUser.id],
+      });
 
     expect(res.status).toBe(201);
     expect(res.body.isGroup).toBe(false);
@@ -40,41 +42,48 @@ describe("POST /api/chats", () => {
       username: "stefan",
       email: "stefan@example.com",
     });
-    const agent = request.agent(app);
 
-    await agent.post("/api/auth/register").send({
+    const registerRes = await request(app).post("/api/auth/register").send({
       username: "marko",
       email: "marko@example.com",
       password: "password123",
       name: "Marko",
     });
+    const token = registerRes.body.token;
 
-    const firstRes = await agent.post("/api/chats").send({
-      profileIds: [otherUser.id],
-    });
-    const secondRes = await agent.post("/api/chats").send({
-      profileIds: [otherUser.id],
-    });
+    const firstRes = await request(app)
+      .post("/api/chats")
+      .set("Authorization", `Bearer ${token}`)
+      .send({
+        profileIds: [otherUser.id],
+      });
+    const secondRes = await request(app)
+      .post("/api/chats")
+      .set("Authorization", `Bearer ${token}`)
+      .send({
+        profileIds: [otherUser.id],
+      });
 
-    expect(firstRes.status).toBe(201); 
-    expect(secondRes.status).toBe(200); 
+    expect(firstRes.status).toBe(201);
+    expect(secondRes.status).toBe(200);
     expect(firstRes.body.id).toBe(secondRes.body.id);
   });
 
   test("враќа 400 ако profileIds е празна низа", async () => {
-
-    const agent = request.agent(app);
-
-    await agent.post("/api/auth/register").send({
+    const registerRes = await request(app).post("/api/auth/register").send({
       username: "marko",
       email: "marko@example.com",
       password: "password123",
       name: "Marko",
     });
+    const token = registerRes.body.token;
 
-    const res = await agent.post("/api/chats").send({
-      profileIds: [],
-    });
+    const res = await request(app)
+      .post("/api/chats")
+      .set("Authorization", `Bearer ${token}`)
+      .send({
+        profileIds: [],
+      });
 
     expect(res.status).toBe(400);
   });
@@ -89,19 +98,21 @@ describe("POST /api/chats", () => {
       email: "jane@example.com",
     });
 
-    const agent = request.agent(app);
-
-    await agent.post("/api/auth/register").send({
+    const registerRes = await request(app).post("/api/auth/register").send({
       username: "marko",
       email: "marko@example.com",
       password: "password123",
       name: "Marko",
     });
+    const token = registerRes.body.token;
 
-    const res = await agent.post("/api/chats").send({
-      profileIds: [firstUser.id, secondUser.id],
-      name: "Тест група"
-    });
+    const res = await request(app)
+      .post("/api/chats")
+      .set("Authorization", `Bearer ${token}`)
+      .send({
+        profileIds: [firstUser.id, secondUser.id],
+        name: "Тест група",
+      });
 
     expect(res.status).toBe(201);
     expect(res.body.isGroup).toBe(true);
@@ -109,21 +120,30 @@ describe("POST /api/chats", () => {
   });
 
   test("враќа 400 за групен чат без име", async () => {
-  const firstUser = await createTestUser({ username: "stefan", email: "stefan@example.com" });
-  const secondUser = await createTestUser({ username: "jane", email: "jane@example.com" });
+    const firstUser = await createTestUser({
+      username: "stefan",
+      email: "stefan@example.com",
+    });
+    const secondUser = await createTestUser({
+      username: "jane",
+      email: "jane@example.com",
+    });
 
-  const agent = request.agent(app);
-  await agent.post("/api/auth/register").send({
-    username: "marko",
-    email: "marko@example.com",
-    password: "password123",
-    name: "Marko",
+    const registerRes = await request(app).post("/api/auth/register").send({
+      username: "marko",
+      email: "marko@example.com",
+      password: "password123",
+      name: "Marko",
+    });
+    const token = registerRes.body.token;
+
+    const res = await request(app)
+      .post("/api/chats")
+      .set("Authorization", `Bearer ${token}`)
+      .send({
+        profileIds: [firstUser.id, secondUser.id],
+      });
+
+    expect(res.status).toBe(400);
   });
-
-  const res = await agent.post("/api/chats").send({
-    profileIds: [firstUser.id, secondUser.id],
-  });
-
-  expect(res.status).toBe(400);
-});
 });

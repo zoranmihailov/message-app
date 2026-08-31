@@ -21,7 +21,7 @@ describe('POST /api/auth/register', () => {
 
     expect(res.status).toBe(201);
     expect(res.body.username).toBe('marko');
-    
+
     expect(res.body.password).toBeUndefined();
   });
 
@@ -29,7 +29,6 @@ describe('POST /api/auth/register', () => {
     const res = await request(app).post('/api/auth/register').send({
       username: 'marko',
       email: 'marko@example.com',
-      // no password and name
     });
 
     expect(res.status).toBe(400);
@@ -50,8 +49,8 @@ describe('POST /api/auth/register', () => {
     await createTestUser({ username: 'marko', email: 'first@example.com' });
 
     const res = await request(app).post('/api/auth/register').send({
-      username: 'marko', // same username
-      email: 'second@example.com', // diff email
+      username: 'marko', 
+      email: 'second@example.com', 
       password: 'password123',
       name: 'Marko',
     });
@@ -105,17 +104,19 @@ describe('GET /api/auth/me', () => {
     expect(res.status).toBe(401);
   });
 
-  test('враќа профил ако си најавен (со agent за session)', async () => {
-    const agent = request.agent(app);
-
-    await agent.post('/api/auth/register').send({
+  test('враќа профил ако си најавен (со token)', async () => {
+    const registerRes = await request(app).post('/api/auth/register').send({
       username: 'marko',
       email: 'marko@example.com',
       password: 'password123',
       name: 'Marko',
     });
 
-    const res = await agent.get('/api/auth/me');
+    const token = registerRes.body.token;
+
+    const res = await request(app)
+      .get('/api/auth/me')
+      .set('Authorization', `Bearer ${token}`);
 
     expect(res.status).toBe(200);
     expect(res.body.username).toBe('marko');
