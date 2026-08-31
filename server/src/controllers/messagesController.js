@@ -4,7 +4,7 @@ import prisma from "../db/client.js";
 export async function sendMessage(req, res) {
   const { chatId } = req.params;
   const { content, imageUrl } = req.body;
-  const currentUserId = req.session.userId;
+  const currentUserId = req.userId;
 
   if (!content?.trim() && !imageUrl?.trim()) {
     return res.status(400).json({ error: "Message must have text or an image" });

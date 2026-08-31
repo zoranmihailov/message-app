@@ -38,7 +38,7 @@ export async function updateProfile(req, res) {
   try {
     const id = req.params.id;
 
-    if (req.session.userId !== id) {
+    if (req.userId !== id) {
       return res.status(403).json({ error: "Forbidden" });
     }
 

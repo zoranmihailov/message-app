@@ -6,7 +6,7 @@ export async function getAllChats(req, res) {
     const chats = await prisma.chat.findMany({
       where: {
         profiles: {
-          some: { id: req.session.userId },
+          some: { id: req.userId },
         },
       },
       select: {
@@ -37,7 +37,7 @@ export async function getAllChats(req, res) {
 // POST   /api/chats
 export async function createChat(req, res) {
   const { profileIds, name } = req.body;
-  const currentUserId = req.session.userId;
+  const currentUserId = req.userId;
 
   if (!Array.isArray(profileIds) || profileIds.length === 0) {
     return res
@@ -128,7 +128,7 @@ export async function getChatById(req, res) {
 
     if (!chat) return res.status(404).json({ error: "Chat not found" });
 
-    const isMember = chat.profiles.some((p) => p.id === req.session.userId);
+    const isMember = chat.profiles.some((p) => p.id === req.userId);
     if (!isMember) {
       return res.status(403).json({ error: "You do not have access" });
     }
