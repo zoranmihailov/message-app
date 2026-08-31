@@ -1,4 +1,3 @@
-// routes/chats.js
 import express from 'express';
 import { getAllChats, createChat, getChatById } from '../controllers/chatsController.js';
 import { sendMessage } from '../controllers/messagesController.js';
